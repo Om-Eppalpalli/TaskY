@@ -2,6 +2,10 @@
 const taskContainer = document.querySelector(".task__container");
 console.log(taskContainer);
 
+// Global Storage
+const globalStore = [];
+
+
 const newCard = ({ id, imageUrl, taskTitle, taskDescription, taskType }) => `<div class="col-md-6 col-lg-4" id=${id}>
 <div class="card">
   <div class="card-header d-flex justify-content-end gap-2">
@@ -22,6 +26,25 @@ const newCard = ({ id, imageUrl, taskTitle, taskDescription, taskType }) => `<di
 </div>
 </div>`
 
+const loadInitialTaskCards = () => {
+  // access LocalStorage
+  const getInitialData = localStorage.getItem("tasky");
+  if(!getInitialData)
+  {
+    return;
+  }
+
+  // Convert stringify Object to Object
+  const { cards } = JSON.parse(getInitialData);
+
+  // Map around the Array to generate HTML card and inject it to DOM
+  cards.map((cardObject) => {
+    const createNewCard = newCard(cardObject);
+    taskContainer.insertAdjacentHTML("beforeend", createNewCard);
+    globalStore.push(cardObject);
+  });
+};
+
 const saveChanges = () => {
     const taskData = {
         id: `${Date.now()}`, // unique number for card id
@@ -33,7 +56,12 @@ const saveChanges = () => {
 
     const createNewCard = newCard(taskData);
 
-    taskContainer.insertAdjacentHTML("beforeend", createNewCard);
+    taskContainer.insertAdjacentHTML("beforeend", createNewCard); // Converting datas from DOM to HTML
+
+    globalStore.push(taskData); // Storing datas in an Array
+
+    // Call Application Programming Interface (API) to update Array containing element in Local Storage
+    localStorage.setItem("tasky", JSON.stringify({cards : globalStore}));
 
     // parent object browser -> window
     // parent object html -> DOM -> document
