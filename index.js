@@ -3,14 +3,14 @@ const taskContainer = document.querySelector(".task__container");
 console.log(taskContainer);
 
 // Global Storage
-const globalStore = [];
+let globalStore = [];
 
 
 const newCard = ({ id, imageUrl, taskTitle, taskDescription, taskType }) => `<div class="col-md-6 col-lg-4" id=${id}>
 <div class="card">
   <div class="card-header d-flex justify-content-end gap-2">
-    <button type="button" class="btn btn-outline-success"><i class="fa-solid fa-pencil"></i></button>
-    <button type="button" class="btn btn-outline-danger"><i class="fa-solid fa-trash-can"></i></button>
+    <button type="button" id=${id} class="btn btn-outline-success" onclick="editCard.apply(this, arguments)"><i class="fa-solid fa-pencil" id=${id} onclick="editCard.apply(this, arguments)"></i></button>
+    <button type="button" id=${id} class="btn btn-outline-danger" onclick="deleteCard.apply(this, arguments)"><i class="fa-solid fa-trash-can" id=${id} onclick="deleteCard.apply(this, arguments)"></i></button>
   </div>
   <img
     src=${imageUrl}
@@ -45,6 +45,8 @@ const loadInitialTaskCards = () => {
   });
 };
 
+const updateLocalStorage = () => localStorage.setItem("tasky", JSON.stringify({cards: globalStore}));
+
 const saveChanges = () => {
     const taskData = {
         id: `${Date.now()}`, // unique number for card id
@@ -61,9 +63,61 @@ const saveChanges = () => {
     globalStore.push(taskData); // Storing datas in an Array
 
     // Call Application Programming Interface (API) to update Array containing element in Local Storage
-    localStorage.setItem("tasky", JSON.stringify({cards : globalStore}));
+    updateLocalStorage();
 
     // parent object browser -> window
     // parent object html -> DOM -> document
 
+};
+
+const deleteCard = (event) => {
+  // id
+  event = window.event;
+  const targetID = event.target.id;
+  const tagname = event.target.tagName;
+
+  // search the globalStore, remove the Object which matches with the id
+  globalStore = globalStore.filter((cardObject) => cardObject.id !== targetID);
+
+  updateLocalStorage();
+
+  // access DOM to remove them
+  // When user click on delete button
+  if(tagname === "BUTTON")
+  {
+    return taskContainer.removeChild(
+      event.target.parentNode.parentNode.parentNode
+    );
+  }
+
+  // When user click on icon of delete button
+  return taskContainer.removeChild(
+    event.target.parentNode.parentNode.parentNode.parentNode
+  );
+};
+
+// Content Edit Able
+const editCard = (event) => {
+  event = window.event;
+  const targetID = event.target.id;
+  const tagname = event.target.tagName;
+
+  let parentElement;
+  if(tagname == "BUTTON")
+  {
+    parentElement = event.target.parentNode.parentNode;
+  }
+  else
+  {
+    parentElement = event.target.parentNode.parentNode.parentNode;
+  }
+  let taskTitle = parentElement.childNodes[5].childNodes[1];
+  let taskDescription = parentElement.childNodes[5].childNodes[3];
+  let taskType = parentElement.childNodes[5].childNodes[5];
+  let submitButton = parentElement.childNodes[7].childNodes[1];
+  // SetAttribute
+  taskTitle.setAttribute("contenteditable", "true");
+  taskDescription.setAttribute("contenteditable", "true");
+  taskType.setAttribute("contenteditable", "true");
+  submitButton.innerHTML = "Save Chanegs";
 };
